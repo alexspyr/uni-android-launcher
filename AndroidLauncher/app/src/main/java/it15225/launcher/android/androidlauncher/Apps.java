@@ -1,8 +1,10 @@
 package it15225.launcher.android.androidlauncher;
 
-import android.content.pm.PackageInfo;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,16 +38,26 @@ public class Apps extends Fragment {
         gridview = (GridView) view.findViewById(R.id.gridView1);
 
 
-        List<PackageInfo> packs = getActivity().getPackageManager().getInstalledPackages(0);
+        List<ApplicationInfo> packs = getActivity().getPackageManager().getInstalledApplications(0);
         for (int i = 0; i < packs.size(); i++) {
-            PackageInfo p = packs.get(i);
-            String installer = getActivity().getPackageManager().getInstallerPackageName(p.packageName);
-            if (installer != null) {
-                String appName = p.applicationInfo.loadLabel(getActivity().getPackageManager()).toString();
+            ApplicationInfo p = packs.get(i);
+            if (p.packageName != null) {
                 String packageName = p.packageName;
-                names_list.add(appName);
-                packagename_list.add(packageName);
+                PackageManager packageManager = getActivity().getApplicationContext().getPackageManager();
+                String appName = null;
+                try {
+                    appName = (String) packageManager.getApplicationLabel(packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA));
+                } catch (PackageManager.NameNotFoundException e) {
+                    e.printStackTrace();
+                }
+
+                if (appName != null) {
+                    Log.d(TAG, "packageName: " + packageName + " , appName: " + appName);
+                    names_list.add(appName);
+                    packagename_list.add(packageName);
+                }
             }
+
         }
 
         appAdapter = new AppAdapter(getContext(), names_list, packagename_list);
